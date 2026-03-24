@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}{{ recipe.title }} — Recipe Tracker{% endblock %}
+
+{% block content %}
+{% if recipe.image %}
+<div class="recipe-hero">
+  <img class="recipe-hero-img" src="{{ url_for('static', filename=recipe.image) }}" alt="{{ recipe.title }}">
+  <div class="recipe-hero-content container">
+    <div class="recipe-hero-cat">{{ category.icon if category }} {{ category.name if category else recipe.category }}</div>
+    <h1 class="recipe-hero-title">{{ recipe.title }}</h1>
+  </div>
+</div>
+{% else %}
+<div class="recipe-no-hero">
+  <div class="recipe-hero-cat">{{ category.icon if category }} {{ category.name if category else recipe.category }}</div>
+  <h1 class="recipe-hero-title">{{ recipe.title }}</h1>
+</div>
+{% endif %}
+
+<div class="breadcrumb">
+  <a href="{{ url_for('index') }}">Home</a>
+  <span>›</span>
+  {% if category %}<a href="{{ url_for('category', cat_id=category.id) }}">{{ category.name }}</a><span>›</span>{% endif %}
+  <span class="current">{{ recipe.title }}</span>
+</div>
+
+<div class="recipe-body">
+  <!-- Sidebar -->
+  <aside class="recipe-sidebar">
+    {% if recipe.description %}
+    <div class="info-card fade-in">
+      <p style="color:var(--charcoal);font-style:italic;line-height:1.7;">{{ recipe.description }}</p>
+    </div>
+    {% endif %}
+
+    <div class="info-card fade-in">
+      <h3>Details</h3>
+      {% if recipe.servings %}
+      <div class="meta-row"><span>Servings</span><span>{{ recipe.servings }}</span></div>
+      {% endif %}
+      {% if recipe.protein_per_serving %}
+      <div class="meta-row"><span>Protein per Serving</span><span>{{ recipe.protein_per_serving }}</span></div>
+      {% endif %}
+      {% if recipe.cook_time %}
+      <div class="meta-row"><span>Cook Time</span><span>{{ recipe.cook_time }}</span></div>
+      {% endif %}
+      {% if recipe.steps %}
+      <div class="meta-row"><span>Steps</span><span>{{ recipe.steps|length }}</span></div>
+      {% endif %}
+      {% if recipe.created %}
+      <div class="meta-row"><span>Added</span><span>{{ recipe.created[:10] }}</span></div>
+      {% endif %}
+    </div>
+
+    {% if recipe.ingredients %}
+    <div class="info-card fade-in">
+      <h3>Ingredients</h3>
+      <ul class="ingredient-list">
+        {% for ing in recipe.ingredients %}
+        <li class="ingredient-item">
+          <span class="ingredient-amount">
+            {{ ing.amount }}{% if ing.unit %} {{ ing.unit }}{% endif %}
+          </span>
+          <span class="ingredient-name">{{ ing.name }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <div class="recipe-actions">
+      <a href="{{ url_for('edit_recipe', recipe_id=recipe_id) }}" class="btn btn-outline btn-sm">✏️ Edit</a>
+      <form action="{{ url_for('delete_recipe', recipe_id=recipe_id) }}" method="POST" onsubmit="return confirm('Delete this recipe?')">
+        <button type="submit" class="btn btn-danger btn-sm">🗑 Delete</button>
+      </form>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="recipe-main">
+
+    <!-- Step-by-step -->
+    {% if recipe.steps and recipe.steps|length > 0 %}
+    <div class="recipe-section fade-in">
+      <h2>👨‍🍳 How to Make It</h2>
+      <div class="steps-list">
+        {% for step in recipe.steps %}
+        <div class="step-card" data-step="{{ loop.index }}">
+          <div class="step-card-header">
+            <div class="step-circle">{{ loop.index }}</div>
+            {% if step.title %}
+            <h3 class="step-card-title">{{ step.title }}</h3>
+            {% else %}
+            <h3 class="step-card-title">Step {{ loop.index }}</h3>
+            {% endif %}
+          </div>
+          {% if step.desc %}
+          <div class="step-card-body">{{ step.desc }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Notes -->
+    {% if recipe.notes %}
+    <div class="recipe-section fade-in">
+      <h2>💡 Notes & Tips</h2>
+      <div class="notes">{{ recipe.notes }}</div>
+    </div>
+    {% endif %}
+
+    {% if not recipe.steps and not recipe.notes %}
+    <div class="empty-state">
+      <span class="empty-icon">📝</span>
+      <h3>No steps added yet</h3>
+      <a href="{{ url_for('edit_recipe', recipe_id=recipe_id) }}" class="btn btn-outline" style="margin-top:1rem;">Add Steps</a>
+    </div>
+    {% endif %}
+  </main>
+</div>
+{% endblock %}

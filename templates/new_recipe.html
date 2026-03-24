@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Edit' if editing else 'New Recipe' }} — Recipe Tracker{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{{ url_for('index') }}">Home</a>
+  <span>›</span>
+  {% if editing %}
+  <a href="{{ url_for('recipe', recipe_id=recipe_id) }}">{{ recipe.title }}</a>
+  <span>›</span>
+  <span class="current">Edit</span>
+  {% else %}
+  <span class="current">New Recipe</span>
+  {% endif %}
+</div>
+
+<div class="form-page">
+  <div class="form-header">
+    <div class="section-subtitle">{{ 'Edit Recipe' if editing else 'Add to Your Collection' }}</div>
+    <h1>{{ recipe.title if editing else 'New Recipe' }}</h1>
+  </div>
+
+  <form action="{{ url_for('edit_recipe', recipe_id=recipe_id) if editing else url_for('new_recipe') }}"
+        method="POST" enctype="multipart/form-data">
+
+    <!-- BASICS -->
+    <div class="form-card fade-in">
+      <h2>🍴 The Basics</h2>
+      <div class="form-group">
+        <label>Recipe Name *</label>
+        <input type="text" name="title" class="form-control" placeholder="e.g. Mango Protein Smoothie"
+               value="{{ recipe.title if editing else '' }}" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Category *</label>
+          <select name="category" class="form-control" required>
+            <option value="">Select a category…</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if editing and recipe.category == cat.id %}selected{% endif %}>
+              {{ cat.icon }} {{ cat.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Servings</label>
+          <input type="text" name="servings" class="form-control" placeholder="e.g. 2 servings"
+                 value="{{ recipe.servings if editing else '' }}">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Protein per Serving</label>
+          <input type="text" name="protein_per_serving" class="form-control" placeholder="e.g. 25g"
+                 value="{{ recipe.protein_per_serving if editing else '' }}">
+        </div>
+        <div class="form-group">
+          <label>Cook Time</label>
+          <input type="text" name="cook_time" class="form-control" placeholder="e.g. 30 min"
+                 value="{{ recipe.cook_time if editing else '' }}">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Short Description</label>
+        <textarea name="description" class="form-control" rows="2"
+                  placeholder="A quick description of this recipe…">{{ recipe.description if editing else '' }}</textarea>
+      </div>
+    </div>
+
+    <!-- PHOTO -->
+    <div class="form-card fade-in">
+      <h2>📸 Photo <span style="font-size:0.85rem;color:#aaa;font-weight:400;">(optional)</span></h2>
+      <div class="image-upload-area" id="upload-area">
+        <input type="file" name="image" accept="image/*" onchange="previewImage(this)">
+        <span class="upload-icon">🖼️</span>
+        <div class="upload-text">
+          <strong>Click to upload</strong> or drag & drop<br>
+          <small>PNG, JPG, WEBP up to 16MB</small>
+        </div>
+      </div>
+      {% if editing and recipe.image %}
+      <div class="image-preview" id="image-preview">
+        <img src="{{ url_for('static', filename=recipe.image) }}" alt="Current image">
+      </div>
+      <p style="font-size:0.8rem;color:#aaa;margin-top:0.5rem;">Upload a new image to replace the current one.</p>
+      {% else %}
+      <div class="image-preview" id="image-preview" style="display:none;"></div>
+      {% endif %}
+    </div>
+
+    <!-- INGREDIENTS -->
+    <div class="form-card fade-in">
+      <h2>🧄 Ingredients</h2>
+      <p style="font-size:0.85rem;color:#999;margin-bottom:1rem;">Add each ingredient one by one with its amount and unit.</p>
+      <div class="ing-header">
+        <small>Ingredient</small>
+        <small>Amount</small>
+        <small>Unit</small>
+        <span></span>
+      </div>
+      <div id="ingredients-container">
+        {% if editing and recipe.ingredients %}
+          {% for ing in recipe.ingredients %}
+          <div class="ingredient-row">
+            <input type="text" name="ing_name[]" class="form-control" placeholder="e.g. Banana" value="{{ ing.name }}">
+            <input type="text" name="ing_amount[]" class="form-control" placeholder="e.g. 1" value="{{ ing.amount }}">
+            <input type="text" name="ing_unit[]" class="form-control" placeholder="e.g. cup" value="{{ ing.unit }}">
+            <button type="button" class="remove-ing" onclick="removeIngredient(this)" title="Remove">✕</button>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="ingredient-row">
+            <input type="text" name="ing_name[]" class="form-control" placeholder="e.g. Banana">
+            <input type="text" name="ing_amount[]" class="form-control" placeholder="e.g. 1">
+            <input type="text" name="ing_unit[]" class="form-control" placeholder="e.g. cup">
+            <button type="button" class="remove-ing" onclick="removeIngredient(this)" title="Remove">✕</button>
+          </div>
+        {% endif %}
+      </div>
+      <button type="button" class="add-ing-btn" onclick="addIngredient()">+ Add another ingredient</button>
+    </div>
+
+    <!-- STEPS -->
+    <div class="form-card fade-in">
+      <h2>👨‍🍳 Cooking Steps</h2>
+      <p style="font-size:0.85rem;color:#999;margin-bottom:1.25rem;">Break the recipe into clear numbered steps.</p>
+      <div id="steps-container">
+        {% if editing and recipe.steps %}
+          {% for step in recipe.steps %}
+          <div class="step-row">
+            <div class="step-drag">⠿</div>
+            <div class="step-num">{{ loop.index }}</div>
+            <div class="step-fields">
+              <input type="text" name="step_title[]" class="form-control step-title-input"
+                     placeholder="Step title (optional) — e.g. Marinate the chicken"
+                     value="{{ step.title }}">
+              <textarea name="step_desc[]" class="form-control" rows="3"
+                        placeholder="Describe what to do in this step…">{{ step.desc }}</textarea>
+            </div>
+            <button type="button" class="remove-step" onclick="removeStep(this)" title="Remove step">✕</button>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="step-row">
+            <div class="step-drag">⠿</div>
+            <div class="step-num">1</div>
+            <div class="step-fields">
+              <input type="text" name="step_title[]" class="form-control step-title-input"
+                     placeholder="Step title (optional) — e.g. Prep ingredients">
+              <textarea name="step_desc[]" class="form-control" rows="3"
+                        placeholder="Describe what to do in this step…"></textarea>
+            </div>
+            <button type="button" class="remove-step" onclick="removeStep(this)" title="Remove step">✕</button>
+          </div>
+        {% endif %}
+      </div>
+      <button type="button" class="add-step-btn" onclick="addStep()">+ Add another step</button>
+    </div>
+
+    <!-- NOTES -->
+    <div class="form-card fade-in">
+      <h2>💡 Notes & Tips</h2>
+      <div class="form-group">
+        <label>Personal notes, substitutions, storage tips…</label>
+        <textarea name="notes" class="form-control" rows="4"
+                  placeholder="e.g. Can be stored in the fridge for 3 days. Swap chicken for tofu for a vegetarian version…">{{ recipe.notes if editing else '' }}</textarea>
+      </div>
+    </div>
+
+    <!-- SUBMIT -->
+    <div style="display:flex;gap:1rem;justify-content:flex-end;margin-bottom:4rem;">
+      {% if editing %}
+      <a href="{{ url_for('recipe', recipe_id=recipe_id) }}" class="btn btn-outline">Cancel</a>
+      {% else %}
+      <a href="{{ url_for('index') }}" class="btn btn-outline">Cancel</a>
+      {% endif %}
+      <button type="submit" class="btn btn-primary">
+        {{ '💾 Save Changes' if editing else '✨ Save Recipe' }}
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

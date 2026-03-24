@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}{{ category.name }} Recipes — Recipe Tracker{% endblock %}
+
+{% block content %}
+<div style="background:linear-gradient(135deg,var(--sea),var(--sky));padding:4rem 2rem;text-align:center;">
+  <div style="font-size:4rem;margin-bottom:1rem;">{{ category.icon }}</div>
+  <h1 style="font-family:'Playfair Display',serif;font-size:2.5rem;color:white;font-style:italic;">{{ category.name }}</h1>
+  <p style="color:rgba(255,255,255,0.7);margin-top:0.5rem;">{{ recipes|length }} recipe{{ 's' if recipes|length != 1 }}</p>
+</div>
+
+<div class="breadcrumb">
+  <a href="{{ url_for('index') }}">Home</a>
+  <span>›</span>
+  <span class="current">{{ category.name }}</span>
+</div>
+
+<div class="container section">
+  {% if recipes %}
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+    <h2 class="section-title">{{ category.name }} Recipes</h2>
+    <a href="{{ url_for('new_recipe') }}" class="btn btn-primary btn-sm">+ Add Recipe</a>
+  </div>
+  <div class="recipes-grid">
+    {% for rid, r in recipes.items() %}
+    <a href="{{ url_for('recipe', recipe_id=rid) }}" class="recipe-card fade-in">
+      {% if r.image %}
+      <img class="recipe-card-img" src="{{ url_for('static', filename=r.image) }}" alt="{{ r.title }}">
+      {% else %}
+      <div class="recipe-card-no-img">{{ category.icon }}</div>
+      {% endif %}
+      <div class="recipe-card-body">
+        <div class="recipe-card-cat">{{ category.name }}</div>
+        <div class="recipe-card-title">{{ r.title }}</div>
+        {% if r.description %}<div class="recipe-card-desc">{{ r.description }}</div>{% endif %}
+        <div class="recipe-card-meta">
+          {% if r.prep_time %}<div class="meta-item">⏱ {{ r.prep_time }}</div>{% endif %}
+          {% if r.servings %}<div class="meta-item">👥 {{ r.servings }}</div>{% endif %}
+          {% if r.ingredients %}<div class="meta-item">📋 {{ r.ingredients|length }} ingredients</div>{% endif %}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <span class="empty-icon">{{ category.icon }}</span>
+    <h3>No {{ category.name }} recipes yet</h3>
+    <p style="margin-bottom:2rem;">Start building your collection!</p>
+    <a href="{{ url_for('new_recipe') }}" class="btn btn-primary">+ Add First Recipe</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

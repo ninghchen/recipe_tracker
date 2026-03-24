@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}Recipe Tracker{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <div class="hero-content">
+    <h1 class="fade-in">Recipe <em>Tracker</em></h1>
+    <p class="fade-in-delay">a place to track my recipes</p>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;" class="fade-in-delay-2">
+      <a href="{{ url_for('new_recipe') }}" class="btn btn-primary">+ Add a Recipe</a>
+      <a href="#categories" class="btn btn-secondary">Browse Categories</a>
+    </div>
+  </div>
+</div>
+
+<div class="container section" id="categories">
+  <div class="section-subtitle">Browse by Category</div>
+  <h2 class="section-title">What are we cooking?</h2>
+  <div class="categories-grid">
+    {% for cat in categories %}
+    <a href="{{ url_for('category', cat_id=cat.id) }}" class="category-card fade-in">
+      <span class="category-icon">{{ cat.icon }}</span>
+      <div class="category-name">{{ cat.name }}</div>
+      <div class="category-count">{{ category_counts.get(cat.id, 0) }} recipe{{ 's' if category_counts.get(cat.id, 0) != 1 }}</div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+
+{% if recipes %}
+<div style="background:var(--cream);padding:1px 0;">
+<div class="container section">
+  <div class="section-subtitle">All Recipes</div>
+  <h2 class="section-title">The Full Collection</h2>
+  <div class="recipes-grid">
+    {% for rid, r in recipes.items() %}
+    {% set cat = categories | selectattr('id','equalto',r.category) | first %}
+    <a href="{{ url_for('recipe', recipe_id=rid) }}" class="recipe-card fade-in">
+      {% if r.image %}
+      <img class="recipe-card-img" src="{{ url_for('static', filename=r.image) }}" alt="{{ r.title }}">
+      {% else %}
+      <div class="recipe-card-no-img">{{ cat.icon if cat else '🍴' }}</div>
+      {% endif %}
+      <div class="recipe-card-body">
+        <div class="recipe-card-cat">{{ cat.name if cat else r.category }}</div>
+        <div class="recipe-card-title">{{ r.title }}</div>
+        {% if r.description %}
+        <div class="recipe-card-desc">{{ r.description }}</div>
+        {% endif %}
+        <div class="recipe-card-meta">
+          {% if r.protein_per_serving %}<div class="meta-item">💪 {{ r.protein_per_serving }}</div>{% endif %}
+          {% if r.servings %}<div class="meta-item">👥 {{ r.servings }}</div>{% endif %}
+          {% if r.ingredients %}<div class="meta-item">📋 {{ r.ingredients|length }} ingredients</div>{% endif %}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+</div>
+{% endif %}
+{% endblock %}

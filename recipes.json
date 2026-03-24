@@ -1,0 +1,50 @@
+{
+  "c377dd56": {
+    "title": "Mango-Pineapple Smoothie Bowl",
+    "category": "smoothies",
+    "description": "",
+    "servings": "2",
+    "protein_per_serving": "20",
+    "cook_time": "10",
+    "ingredients": [
+      {
+        "name": "Frozen Mangoes",
+        "amount": "1",
+        "unit": "cup"
+      },
+      {
+        "name": "Frozen Pineapple",
+        "amount": "1",
+        "unit": "cup"
+      },
+      {
+        "name": "Milk",
+        "amount": "3/4",
+        "unit": "cup"
+      },
+      {
+        "name": "Chia Seeds (Optional)",
+        "amount": "2",
+        "unit": "tbsp"
+      },
+      {
+        "name": "Granola (Optional)",
+        "amount": "1/2",
+        "unit": "cup"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Add to Blender",
+        "desc": "Mango, pineapple, liquid of choice, and chia seeds"
+      },
+      {
+        "title": "Plate",
+        "desc": "Top with optional granola or fruit."
+      }
+    ],
+    "notes": "",
+    "image": null,
+    "created": "2026-03-24T16:01:16.912479"
+  }
+}
