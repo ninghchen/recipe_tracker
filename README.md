@@ -1,6 +1,7 @@
 # 🍊 Recipe Tracker — Personal Recipe Tracker
 
-A place to track my own recipes built with Flask and vanilla HTML/CSS/JS.
+Self-project to create a place to track my own recipes built with Flask and vanilla HTML/CSS/JS.
+Currently limited to running locally – not hosted. 
 
 ## Features
 - Multiple recipe categories
